@@ -1,0 +1,223 @@
+#General Functions
+#Package install list
+
+# install.packages(c("XLConnect","Rcmdr","tictoc","data.table","chron","stringr"),dependencies=T)#General
+# install.packages(c("psych"),dependencies=T)#STATS
+# install.packages(c("ggplot2"),dependencies=T)#PLOTS
+# install.packages(c("dbplyr","sqldf","RJDBC","RPostgreSQL"),dependencies=T)#DBCONNECTIONS
+# install.packages(c("uuid"),dependencies=T)#Randomnumbergen
+#install.packages("tictoc",dependencies = T)
+#install.packaged("rlist","RJSONIO") #handling JSON data
+# if(!requireNamespace("BiocManager",quietly=TRUE))install.packages("BiocManager")
+# BiocManager::install("graph",version="3.8")
+# BiocManager::install("RBGL",version="3.8")
+# BiocManager::install("Rgraphviz",version="3.8")
+#install.packages("listviewer") 
+#install.packages("beepr")
+
+packages<-c("dplyr","tidyr",'beepr')
+lapply(packages, require, character.only = TRUE)
+
+#Package installing if needed
+bringpackage<-function(packages_needed){
+  installed<-installed.packages()
+  for (i in packages_needed){
+    if( i %in% installed){
+      lapply(i, library, character.only  = TRUE)
+    }else{
+      install.packages(i)
+      lapply(i, library, character.only  = TRUE)
+    }
+  }
+}
+
+#List of unique elements in all coluns of a data frame
+u_col<-function(dataframe){
+  return(sapply(dataframe,function(x) unique(x)))
+}
+#Length of unique elements in a vector
+len_unique<-function(x){
+  return(length(unique(x)))
+}
+#Length of True elements in a logical vector 
+len_which <- function(x) {
+  
+    return (length(which(x)))
+}
+#Length of NA elements in a logical vector 
+len_na <- function(x) {
+  
+  return (length(which(is.na(x))))
+}
+
+#List of na elements in all coluns of a data frame
+NAs<-function(dataframe){
+  return(sapply(dataframe,function(x) which(is.na(x))))
+}
+
+#Frequency Table
+Freq_tb <- function(x,
+                    y = NA,
+                    Greater_Than_y = F) {
+  t <- data.frame(table(x))
+  
+  if (!is.na(y)) {
+    if (Greater_Than_y) {
+      return(t[which(t$Freq > y),])
+    } else
+    {
+      return(t[which(t$Freq == y),])
+    }
+  } else
+  {
+    return(t)
+  }
+}
+
+
+#Data Wranggling---------------------------------------------------
+DFtolower <- function(dataframe,
+                      col.index = NULL,
+                      col.string = NULL,
+                      col.class = NULL) {
+  cols <- NULL
+  
+  if (!length(col.index) == 0) {
+    cols <- append(cols, col.index)
+  }
+  if (!length(col.string) == 0) {
+    matches <- grep(pattern = paste(col.string,collapse = "|"), names(dataframe))
+    cols <- append(cols, matches)
+  }
+  if (!length(col.class) == 0) {
+    matches <- which(sapply(dataframe, class) == col.class)
+    cols <- append(cols, matches)
+  }
+  cols <- unique(cols)
+  for (i in cols) {
+    dataframe[, i] <- tolower(dataframe[, i])
+  }
+  print(paste("changes made to ", paste(names(dataframe[cols]), collapse = (", "))))
+  return(dataframe)
+}
+
+
+#Data cleaning---------------------------------------------------
+is_outlier<-function(x) {
+  return(x < quantile(x, 0.25) - 1.5*IQR(x) | x > quantile(x, 0.75) + 1.5*IQR(x))}
+
+Create_outlier_column<-function(Data,Col,Group){
+  #Data= Data File
+  #Col: Columns in which outlier need to be found
+  #Group: Columns in which you have variable acc. to which groups sub-sets needs to be formed
+  
+  out<-do.call(data.frame,aggregate(x = Data[,Col],by=list(Data[,Group]),FUN=is_outlier))
+  Outlier<-data.frame(NULL)
+  for(i in 1: length(unique(Data[,Group]))){
+    df<-data.frame(rep(x = as.character(out[i,1]),length(out[1,-1])),as.character(out[i,-1]))
+    names(df)<-c(Group,paste("Outlier-",Col))
+    Outlier<-rbind(Outlier,df)
+  }
+  Data<-cbind(Data,Outlier[,2]); names(Data)[length(names(Data))]<-paste("Outlier-",Col)
+  return(Data)
+}
+
+UUID_assign <- function(Change_vector) {
+  source_table_key_Var <-
+    data.frame(Variable = unique(Change_vector),
+               UUID =
+                 tolower(replicate(
+                   length(unique(Change_vector)),
+                   uuid::UUIDgenerate(use.time = TRUE)
+                 )))
+  changes<-
+    vlookup(Change_vector = Change_vector, source_table_key_Var = source_table_key_Var)
+  return(changes)
+}
+
+vlookup <-
+  function(Change_vector,
+           source_table_key_Var,
+           na_treatment = 0) {
+    # Change_vector:    Column in DF which needs to be changed
+    # source_table_Var_key: DF with @ columns- var and key where Var has same calues as change vector
+    # na_treatment: 0- Leave NAs   1- ORiginal value   2- replace with UUID
+    
+    source_table_key_Var<-source_table_key_Var[which(!is.na(source_table_key_Var[1])),]
+    
+    
+  #  if(len_which(is.na(Change_vector)>0)) stop("Change_vector contains NAs")
+    
+    temp <-
+      data.frame(Variable = Change_vector, Key = seq(1:length(Change_vector)))
+    temp <-
+      merge(
+        x = temp,
+        y = source_table_key_Var,
+        by.x = "Variable",
+        by.y = names(source_table_key_Var)[1],
+        all.x = T
+      )
+    
+    #Handle NAs-------------------------
+    
+    na_rows <- which(is.na(temp[3]))
+    if (length(na_rows) != 0) {
+      if (na_treatment == 1) {
+        temp[na_rows, 3] <- as.character(temp[na_rows, 1])
+      } else if (na_treatment == 2) {
+        temp[na_rows, 3] <- UUID_assign(Change_vector = temp[na_rows, 1])
+      }
+    }
+    which(temp$Variable=="afe69303-21ff-4798-94c0-02d2122400e3");temp[2915,]
+    #Getting value and indexes--------------------
+    temp$Variable = temp[, 3]
+    temp <- temp[order(temp$Key), ]
+    na_rows <- which(is.na(temp[3])) #Getting NA indexes for re-orderd rows
+    
+    new_values = as.character(temp$Variable)
+    if (length(na_rows) != 0) {
+      values_changed = temp$Key[-na_rows]
+    } else{
+      values_changed = temp$Key
+      na_rows="No NA Rows"
+    }
+    return(list(new_values=new_values,values_changed=values_changed,na_rows=na_rows))
+  }
+# remove NA
+remove_NA<-function(x){
+  nas<-which(is.na(x))
+  if(length(nas)>0){
+    return(x[-nas])
+  }else return(x)
+}
+
+#UUID Check
+
+Which_UUID <- function(x) {
+  grep(
+    "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+    x
+  )
+}
+
+#Graph Based grouping--------------------------------------
+
+find_graph_groups<-function(pairs){
+  require(graph)
+  require("RBGL")
+  require(Rgraphviz)
+  
+  test <-
+    ftM2graphNEL(as.matrix(pairs))
+  
+  cc <- connectedComp(test)
+  ## Massage results into the format you're after
+  ld <- lapply(seq_along(cc),
+               function(i)
+                 data.frame(group = names(cc)[i], id = cc[[i]]))
+  return( do.call(rbind, ld))
+}
+
+
+
