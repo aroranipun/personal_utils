@@ -219,5 +219,23 @@ find_graph_groups<-function(pairs){
   return( do.call(rbind, ld))
 }
 
-
-
+# Create folder------------------------------------
+dir_skeleton<-function() {
+  folders <-
+    c(
+      "data",
+      "data/raw",
+      "data/temp",
+      "output",
+      "src",
+      "src/r",
+      "src/sql",
+      "src/python",
+      "models"
+    )
+  for (i in folders) {
+    dir.create(path = i,
+               recursive = F,
+               showWarnings = T)
+  }
+}
