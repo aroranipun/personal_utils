@@ -219,6 +219,9 @@ find_graph_groups<-function(pairs){
   return( do.call(rbind, ld))
 }
 
+diff_initiated<-function(x) {
+  c(0, diff(x))
+}
 # Create folder------------------------------------
 dir_skeleton<-function() {
   folders <-
