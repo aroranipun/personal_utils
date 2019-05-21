@@ -242,3 +242,24 @@ dir_skeleton<-function() {
                showWarnings = T)
   }
 }
+
+
+
+#Get consecutive distance--------------------
+dist_consecutive<-function(lat,long){
+  require(geosphere)
+  lat=as.numeric(lat)
+  long=as.numeric(long)
+  
+  x=as.matrix(data.frame(long,lat))
+  y = as.matrix(data.frame(
+    long = lag(long, default = long[1]),
+    lat = lag(lat, default = lat[1])
+  ))
+  distance<-NULL
+  for(i in 1:nrow(x)){
+    distance<-append(distance,distHaversine(p1 = x[i,],p2 = y[i,], r=6378137))
+  }
+  return(distance)
+}
+
