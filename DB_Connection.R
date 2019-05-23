@@ -8,9 +8,9 @@ library(dbplyr)
 library(tictoc)
 library(sqldf)
 #try(setwd("/Users/Nipun/Google Drive/Meta"),silent = T)
-try(setwd("G:/My Drive/Meta/"),silent = T)
-pass<-read.csv(file = "Pass.csv")
+pass<-read.csv(file = "G:/My Drive/Meta/Pass.csv")
 pass<-pass[which(pass$grouping=="DBs"),]
+
 
 #names(pass)
 #DB_service<-"RDS"
