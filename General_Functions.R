@@ -234,7 +234,8 @@ dir_skeleton<-function() {
       "src/r",
       "src/sql",
       "src/python",
-      "models"
+      "models",
+      "code"
     )
   for (i in folders) {
     dir.create(path = i,
@@ -242,7 +243,6 @@ dir_skeleton<-function() {
                showWarnings = T)
   }
 }
-
 
 
 #Get consecutive distance--------------------
