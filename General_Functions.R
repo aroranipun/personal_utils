@@ -244,6 +244,20 @@ dir_skeleton<-function() {
   }
 }
 
+code_skeleton<-function(){
+  files <- c("1_get_data.R",
+             "2_clean_up.R",
+             "3_feature creation.R")
+  
+  for(i in files){
+    file.create(paste("code/",files,sep=""))
+  }
+  
+  file.create(paste("src/r/functions_1.R",sep=""))
+}
+
+
+
 
 #Get consecutive distance--------------------
 dist_consecutive<-function(lat,long){
