@@ -7,7 +7,6 @@ library(stringi)
 library(dbplyr)
 library(tictoc)
 library(sqldf)
-#try(setwd("/Users/Nipun/Google Drive/Meta"),silent = T)
 pass<-read.csv(file = "G:/My Drive/Meta/Pass.csv")
 pass<-pass[which(pass$grouping=="DBs"),]
 
@@ -74,15 +73,14 @@ PGS_connect <- function(DB_Details) {
   #Connection details and creds---------------------------
   require("RPostgreSQL")
   driver <- dbDriver("PostgreSQL")
-  return(
-    dbConnect(
+  return(dbConnect(
       driver,
       dbname = DB_Details$Database,
       host = DB_Details$Hostname,
       port = DB_Details$Port,
       user = DB_Details$Username,
       password = DB_Details$Password
-    )
+  )
   )
 }
 #Kill COnnections------------------------
@@ -96,6 +94,8 @@ killDbConnections <- function () {
     +  dbDisconnect(con)
   
   print(paste(length(all_cons), " connections killed."))
+  
+  lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
   
 }
 
