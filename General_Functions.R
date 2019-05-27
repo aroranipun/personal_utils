@@ -277,3 +277,19 @@ dist_consecutive<-function(lat,long){
   return(distance)
 }
 
+sub_groups <- function(x) {
+  k = 1
+  session = c(k)
+  if (length(x) == 1) {
+    return(session)
+  } else {
+    for (i in 2:length(x)) {
+      if (x[i] != x[i - 1]) {
+        k = k + 1
+      }
+      session = append(session, k)
+    }
+  }
+  return(session)
+}
+
