@@ -277,9 +277,12 @@ dist_consecutive<-function(lat,long){
   return(distance)
 }
 
+
 sub_groups <- function(x,
-                       value_based = T,
-                       value_if_diff_based = NA,
+                       value_based = F,
+                       range_based = F,
+                       diff_based = F,
+                       delta = NA,
                        use_absolute = T) {
   k = 1
   session = c(k)
@@ -289,12 +292,14 @@ sub_groups <- function(x,
     for (i in 2:length(x)) {
       if (value_based) {
         change = x[i] != x[i - 1]
+      } else if (range_based) {
+        change = x[i] >= delta
       } else {
         compare = ifelse(test = use_absolute,
                          yes = abs(x[i] - x[i - 1]) ,
                          no = x[i] - x[i - 1])
         
-        change = compare >= value_if_diff_based
+        change = compare >= delta
       }
       if (change) {
         k = k + 1
@@ -306,4 +311,7 @@ sub_groups <- function(x,
 }
 # x = c(1,2,4,4,6,7,32,33,34,30)
 # sub_groups(x = x,value_based = F,value_if_diff_based = 3,use_absolute = T)
+# x = c(1,2,4,4,6,1,2,4,2,1)
+# sub_groups(x = x,range_based = T,delta = 4)
+# 
 # diff_initiated(x)
