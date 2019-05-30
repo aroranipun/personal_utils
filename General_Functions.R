@@ -316,5 +316,24 @@ sub_groups <- function(x,
 # sub_groups(x = x,value_based = F,value_if_diff_based = 3,use_absolute = T)
 # x = c(1,2,4,4,6,1,2,4,2,1)
 # sub_groups(x = x,range_based = T,delta = 4)
-# 
-# diff_initiated(x)
+# diff_appened(x)
+
+standardize<-function(data,columns_needed){
+  require(dplyr)
+  existing<-names(data) [which(names(data) %in% columns_needed)]
+  new<-columns_needed [which(!columns_needed %in% names(data))]
+  
+  data<-add_columns(data = data,cols = new)
+  return(data %>% select(columns_needed))
+}
+
+add_columns <- function(data, cols) {
+  data[,cols] <- NA
+  return(data)
+}
+
+
+
+
+
+
