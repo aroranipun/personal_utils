@@ -318,17 +318,32 @@ sub_groups <- function(x,
 # sub_groups(x = x,range_based = T,delta = 4)
 # diff_appened(x)
 
-standardize<-function(data,columns_needed){
+standardize <- function(data, cols, type) {
   require(dplyr)
-  existing<-names(data) [which(names(data) %in% columns_needed)]
-  new<-columns_needed [which(!columns_needed %in% names(data))]
+  existing <- names(data) [which(names(data) %in% cols)]
+  new <- cols [which(!cols %in% names(data))]
   
-  data<-add_columns(data = data,cols = new)
-  return(data %>% select(columns_needed))
+  data <- add_columns(data = data, cols = new)
+  
+  for (i in 1:length(type)) {
+    col=which(names(data)==cols[i])
+    if (type[i] == "char") {
+      data[, col]  <- as.character(data[, col])
+    }
+    if (type[i] == "numeric") {
+      data[, col] <- as.numeric(data[, col])
+    }
+    #logical cannot handle characterized numeric values properly
+    # if (type[i] == "logical") {
+    #   if(class(data[, col]))
+    #   data[, col]  <- as.logical(data[, col])
+    # }
+  }
+  return(data %>% select(cols))
 }
 
 add_columns <- function(data, cols) {
-  data[,cols] <- NA
+  data[, cols] <- NA
   return(data)
 }
 
