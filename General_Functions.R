@@ -260,8 +260,6 @@ code_skeleton<-function(){
 }
 
 
-
-
 #Get consecutive distance--------------------
 dist_consecutive<-function(lat,long){
   require(geosphere)
@@ -280,7 +278,7 @@ dist_consecutive<-function(lat,long){
   return(distance)
 }
 
-
+#Create sub-groups for 
 sub_groups <- function(x,
                        value_based = F,
                        range_based = F,
@@ -324,7 +322,7 @@ standardize <- function(data, cols, type) {
   new <- cols [which(!cols %in% names(data))]
   
   data <- add_columns(data = data, cols = new)
-  
+  data<-as.data.frame(data)
   for (i in 1:length(type)) {
     col=which(names(data)==cols[i])
     if (type[i] == "char") {
