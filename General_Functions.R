@@ -23,17 +23,25 @@
 # install.packages(c("dplyr","tidyr"))
 
 #Package installing if needed
-bringpackage<-function(packages_needed){
-  installed<-installed.packages()
-  for (i in packages_needed){
-    if( i %in% installed){
-      lapply(i, library, character.only  = TRUE)
-    }else{
-      install.packages(i)
-      lapply(i, library, character.only  = TRUE)
-    }
+bringpackage <-  function(packages_needed) {
+  installed <- data.frame(installed.packages())
+  
+  existing <-
+    packages_needed[which(packages_needed %in% installed$Package)]
+  install <-
+    packages_needed[which(!packages_needed %in% installed$Package)]
+  
+  for (i in existing) {
+    lapply(existing, library, character.only  = TRUE)
+  }
+  
+  for (i in install) {
+    tryCatch(expr = install.packages(i))
+    lapply(i, library, character.only  = TRUE)
   }
 }
+
+
 
 bringpackage(c("dplyr","tidyr"))
 #List of unique elements in all coluns of a data frame
