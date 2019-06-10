@@ -1,26 +1,26 @@
-#General Functions
-#Package install list
+# General Functions----------------------------------------------------------------------------------
+# Package install list
 
-install.packages(c("XLConnect","Rcmdr","tictoc","data.table","chron","stringr"),dependencies=T)
-#General
-install.packages(c("psych"),dependencies=T)
-#STATS
-install.packages(c("ggplot2"),dependencies=T)
-#PLOTS
-install.packages(c("dbplyr","sqldf","RJDBC","RPostgreSQL"),dependencies=T)
-#DBCONNECTIONS
-install.packages(c("uuid"),dependencies=T)
-#Randomnumbergen
-install.packages("tictoc",dependencies = T)
-install.packages("rlist","RJSONIO") 
-#handling JSON data
-if(!requireNamespace("BiocManager",quietly=TRUE))install.packages("BiocManager")
-BiocManager::install("graph",version="3.8")
-BiocManager::install("RBGL",version="3.8")
-BiocManager::install("Rgraphviz",version="3.8")
-install.packages("listviewer")
-install.packages("beepr")
-install.packages(c("dplyr","tidyr"))
+# install.packages(c("XLConnect","Rcmdr","tictoc","data.table","chron","stringr"),dependencies=T)
+# #General
+# install.packages(c("psych"),dependencies=T)
+# #STATS
+# install.packages(c("ggplot2"),dependencies=T)
+# #PLOTS
+# install.packages(c("dbplyr","sqldf","RJDBC","RPostgreSQL"),dependencies=T)
+# #DBCONNECTIONS
+# install.packages(c("uuid"),dependencies=T)
+# #Randomnumbergen
+# install.packages("tictoc",dependencies = T)
+# install.packages("rlist","RJSONIO") 
+# #handling JSON data
+# if(!requireNamespace("BiocManager",quietly=TRUE))install.packages("BiocManager")
+# BiocManager::install("graph",version="3.8")
+# BiocManager::install("RBGL",version="3.8")
+# BiocManager::install("Rgraphviz",version="3.8")
+# install.packages("listviewer")
+# install.packages("beepr")
+# install.packages(c("dplyr","tidyr"))
 
 #Package installing if needed
 bringpackage<-function(packages_needed){
@@ -35,6 +35,7 @@ bringpackage<-function(packages_needed){
   }
 }
 
+bringpackage(c("dplyr","tidyr"))
 #List of unique elements in all coluns of a data frame
 u_col<-function(dataframe){
   return(sapply(dataframe,function(x) unique(x)))
