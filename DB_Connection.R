@@ -1,18 +1,21 @@
-Sys.setenv(JAVA_HOME='c://Program Files/Java/jre1.8.0_201/')
-options(java.parameters = "-Xmx2g")
 
+Sys.setenv(JAVA_HOME='c://Program Files/Java/jre1.8.0_201/') #setup your java home dir
+options(java.parameters = "-Xmx4g") #setups up memory to 4gs
+
+#Needed libraries--------------------------------
 library(RJDBC)
 library(stringr)
 library(stringi)
 library(dbplyr)
 library(tictoc)
 library(sqldf)
+library(RMySQL)
+
+#Read the enviorment file; in this case file containing last pass credentials import
 pass<-read.csv(file = "G:/My Drive/Meta/Pass.csv")
 pass<-pass[which(pass$grouping=="DBs"),]
 
-
 #names(pass)
-#DB_service<-"RDS"
 establish_connection<-function(database_name,schema=NULL){
   if(exists("conn")) {  
     dbDisconnect(conn)}
@@ -32,24 +35,22 @@ establish_connection<-function(database_name,schema=NULL){
     AWS_connect(DB_Details)} else PGS_connect(DB_Details)
 }
 #Redshift Connection-------------------------------------------------
-DB_service="RDS"
 AWS_connect <- function(DB_Details) {
   #Pre-requisites
   #install.packages("RJDBC")
   #download Amazon Redshift JDBC driver
-  #download.file('http://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-1.1.9.1009.jar','RedshiftJDBC41-1.1.9.1009.jar')
-  #download.file('https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.20.1043/RedshiftJDBC42-no-awssdk-1.2.20.1043.jar','RedshiftJDBC42-no-awssdk-1.2.20.1043.jar')
+  #Download the driver directly from website and paste it in the dir
+  download.file(url = 'https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.20.1043/RedshiftJDBC42-no-awssdk-1.2.20.1043.jar',
+                destfile =  'RedshiftJDBC42-no-awssdk-1.2.20.1043.jar')
   
   # connect to Amazon Redshift
-  #driver<-JDBC(*Classname of Driver*, *File name for driver*)
-  #driver <- JDBC("com.amazon.redshift.jdbc41.Driver", "RedshiftJDBC41-1.1.9.1009.jar", identifier.quote="`")
+  #driver<-JDBC(*Classname of Driver*, *File name for driver*) #Format
   driver <- JDBC(driverClass = "com.amazon.redshift.jdbc42.Driver",
                  classPath =  "RedshiftJDBC42-no-awssdk-1.2.20.1043.jar")
   #Debugging:
   #turn on elaborate bug report
   ####.jclassLoader()$setDebug(1L)
-  # Download the driver directly from website and paste it in the dir
-  
+ 
   JDBCURL <- paste("jdbc:redshift://", DB_Details$Hostname, sep = "")
   # url <- "<JDBCURL>:<PORT>/<DBNAME>?user=<USER>&password=<PW>
   #Connection details and creds---------------------------
@@ -98,9 +99,6 @@ killDbConnections <- function () {
   lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
   
 }
-
-
-
 
 
 #TEST-----------------------------
