@@ -51,8 +51,6 @@ def word_attr(word, print_results = False, limit = 5):
 
     return(output)
 
-
-
 def get_key_words(sentence,explained = False):
     # this function takes in a sentence and outputs a list of key words
     # explained = True is used to troubleshoot the process. It results
@@ -161,3 +159,12 @@ def get_key_words(sentence,explained = False):
             phrases.append(v)
     # return a unique list of phrases
     return unique(phrases)
+
+def get_questions(text):
+    text = nlp(text)
+    sents=list(text.sents)
+    questions = []
+    for i in sents:
+        if('?' in i.text):
+            questions.append(i.text)
+    return(' '.join(questions))
