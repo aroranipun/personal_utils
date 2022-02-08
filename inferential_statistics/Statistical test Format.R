@@ -1,12 +1,17 @@
 # All statistical Analsyis
 library("psych")
+library(lsr)
+library(lmtest)
+library(car)
+
+library(dplyr)
+library(MASS)     
 library("ggplot2")
 library("readxl")
 library("Rcmdr")
 library("foreign")
 library(tidyr)
-library(lsr)
-library(lmtest)
+
 #Read and Wrangle Data File-------------------------------------------------------------------------------------
 
 Data<-gather(data = dataset,factor_key = T,key ="col_name for factors", value= "column name for values",
@@ -38,22 +43,36 @@ ggplot(data =Data,aes("colname_Group","colname_Variable"))+
 
 #Kinds of Statistical Tests-----------------------------------------------------------------
 
-##ChiSquare tests-----------------------------------------------------------------------------
-goodnessOfFitTest() #Inputs a frequency table, probabilities can be specified seperately, else assumed equal. e.g. 200 people select a suite, is the choice independent? 
-associationTest() #Chi-square test of categorical association- two sets of populations choose a suite from cards
+##Chi- Square tests-----------------------------------------------------------------------------
+The "goodness-of-fit test" is a way of determining whether a set of categorical data came from a claimed discrete distribution or not. Counts of occurences
+-----1. Only one categorical variable.names ->goodnessOfFitTest
+-----2. Two categorical variables  - > test of independence (or association)
+
+#Chi-Squre distrinution = take a bunch of things that have a standard normal distribution, # square them, then add them up, then the resulting quantity has a chi-square distribution.
+lsr::goodnessOfFitTest() #Inputs a frequency table, probabilities can be specified separately, else assumed equal. e.g. 200 people select a suite, is the choice independent? 
+associationTest() #Chi-square test of categorical association
 #Effect size is measured by cramersV test: 
 cramersV()
+
 ###Assumptions of chi-square tests;
-#1. Expected frequencies are sufficiently large (>5): If not satified, use fishcer
+#1. Expected frequencies are sufficiently large (>5): 
+#If not satifies, use fishcer
 fisher.test()
 #2. Data are independent of one another. If not satisfied, use mcnemar.test
 mcnemar.test()
 
+#Code
+df = survey
+goodnessOfFitTest(x = df$Exer)
+associationTest(formula = ~Exer+Smoke ,data = df)
+
+fisher.test(x = df$Exer,y=df$Smoke)
 
 ##T-tests---------------------------------------------------------------------------------------
-###Assumptions: Normality, Independence of observations(theoritically)
+###Assumptions: Normality, Independence of observations(theoretically)
 
 ## Single  Sample testing
+
 oneSampleTTest("data", "mean to compare with")
 
 ## Two-Sample test---------------
@@ -61,7 +80,9 @@ oneSampleTTest("data", "mean to compare with")
 
 #We have to calculate pooled estimate of variance to figure out the std. error for the differnce 
 
-leveneTest(y = variable~group,data = Data) #test for diff. of variance
+leveneTest(y = variable~group,data = Data) #test for diff. of variance for more than 2 group
+var.test( x,y )  #test for diff. of variance for 1 group
+
 #depending on results from variance test, we choose different kinds of independnt t-tests
 
 #Independent Test-------------no relationship between the pair-----------
@@ -76,13 +97,24 @@ independentSamplesTTest(formula ="value~group","Data",var.equal = F ) #Welch Tes
 pairedSamplesTTest()
 Wilcoxon Signed Rank test # Non-Parametric 
 #Test for Normality
-shapiro.test(model)
+shapiro.test(x)
 
-#IF NORMALITY NOT SATISFIED-Wilcoxon Signed Rank test
+#IF NORMALITY NOT SATISFIED- Wilcoxon Signed Rank test
 wilcox.test( formula = scores ~ group, data = awesome, mu="value if mean in caase of one-sample)", paired = "TRUE if paired"))
 
 #Effect Size------------------
 cohensD( formula = grade ~ tutor,data = harpo, mu="value if mean in caase of one-sample)", method = c("equal", "unequal","paired", "Blank for one sample")) #Effect size
+
+#Run=========================
+ 
+shapiro.test(x = df$Wr.Hnd)  #Normal results
+oneSampleTTest(x = df$Wr.Hnd,mu = 18) #Presuming 18 is the population mean
+
+#between genders height
+leveneTest(y = df$Height,group = df$Sex) # same variance
+shapiro.test(df$Height) # normal Height
+independentSamplesTTest(Height~Sex,data = df)
+
 
 ## One- way ANOVA--------------------------------------------------------------------------------------------------
 
@@ -100,7 +132,7 @@ summary(model)# to get statistics and p-value
 etaSquared( x = model ) #for effect size
 
 # pair-wise t-tests for all groups,corrrection for multiple comparison
-posthocPairwiseT(model,p.adjust.method = "bonferroni"/p.adjust.method = "Holm") 
+posthocPairwiseT(model,p.adjust.method = "bonferroni" or "Holm") 
 
 #Test for homogeniety
 leveneTest( my.anova )
@@ -127,13 +159,17 @@ Non-Techincal Assumptions:
 #6: No "bad" outliers:   
   
   
-#t-stats for  each coeffcient give us the p-value for the possibility that the coefficient is accidentl and not equal to 0.
+#t-stats for  each coeffcient give us the p-value for the possibility that the coefficient is accidental and not equal to 0.
 #The test for the significance of a correlation is identical to the t test that we run on a coefficient in a regression model.
 #Beta-values of coeffcient
 #the standardised coefficients are the coefficients that you would have obtained if you'd converted all the variables to z-scores before running the regression
 # ?? value (standardized coeffcient) of 1 means that an increase in the predictor of 1 standard deviation will produce
 # a corresponding 1 standard deviation increase in the outcome variable. Therefore, if variable A has a
 # larger ?? value than variable B, it is deemed to have a stronger relationship with the outcome.
+
+
+df$female= ifelse(df$Sex=="Female",yes = 1,no = 0)
+df$male= ifelse(df$Sex=="Male",yes = 1,0)
 
 model<-lm(data,subset = -x) #if you want to excluse x'th entry
 summary(model)
